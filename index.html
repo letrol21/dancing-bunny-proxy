@@ -3,105 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dancing Bunny Proxy Launcher</title>
+    <title>Dancing Bunny Proxy</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #121212;
-            color: white;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-            color: #00ff88;
-        }
-
-        .proxy-btn {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            background-color: #00ff88;
-            color: #121212;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .proxy-btn:hover {
-            background-color: #00cc6e;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
-        }
-
-        .proxy-btn:active {
-            transform: translateY(0);
-        }
-
-        p {
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: #888;
-        }
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #121212; color: white; margin: 0; }
+        .proxy-btn { padding: 15px 30px; font-size: 1.2rem; background: #00ff88; color: #121212; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
+        .proxy-btn:hover { background: #00cc6e; }
+        .status { margin-top: 10px; color: #888; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-    <h1>Dancing Bunny Proxy</h1>
-    
-    <button class="proxy-btn" onclick="launchProxy()">Open Stealth Tab</button>
-    
-    <p>Opens a new about:blank page with the proxy loaded.</p>
+    <h1>Dancing Bunny</h1>
+    <button class="proxy-btn" onclick="launchProxy()">Launch Stealth Tab</button>
+    <div class="status" id="status">Ready</div>
 
     <script>
         function launchProxy() {
-            // 1. Ask the user for the URL
-            const targetUrl = prompt("Enter the URL to visit (e.g., https://bing.com):");
+            const statusBox = document.getElementById('status');
+            const targetUrl = prompt("Enter full URL (include https://):", "https://bing.com");
 
-            // 2. UPDATED: Points to your specific Render link and uses '?query='
-            // to match your proxxycoder.js logic.
+            if (!targetUrl) return;
+
+            // This MUST match your Render URL exactly
             const proxyBase = "https://dancing-bunny-proxy.onrender.com/?query=";
+            const fullUrl = proxyBase + encodeURIComponent(targetUrl);
 
-            if (targetUrl) {
-                // 3. Open the about:blank window
-                const newWin = window.open("about:blank", "_blank");
+            statusBox.innerText = "Opening new tab... Please wait up to 60s for server wake-up.";
 
-                if (newWin) {
-                    // 4. Create the content for the new tab
-                    const content = `
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <title>Classes</title>
-                            <style>
-                                body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
-                                iframe { width: 100%; height: 100%; border: none; }
-                            </style>
-                        </head>
-                        <body>
-                            <iframe src="${proxyBase}${encodeURIComponent(targetUrl)}" allowfullscreen></iframe>
-                        </body>
-                        </html>
-                    `;
+            const newWin = window.open("about:blank", "_blank");
 
-                    // 5. Write the content to the new window
-                    newWin.document.open();
-                    newWin.document.write(content);
-                    newWin.document.close();
-                } else {
-                    alert("Pop-up blocked! Please allow pop-ups for this site.");
-                }
+            if (newWin) {
+                // We write a basic loading message into the new tab first
+                newWin.document.write(`
+                    <title>Loading...</title>
+                    <body style="margin:0; background:#000; color:white; display:flex; align-items:center; justify-content:center; height:100vh; font-family:sans-serif;">
+                        <div style="text-align:center;">
+                            <h2>Connecting to Proxy...</h2>
+                            <p>If this stays blank for >1 minute, check your Render dashboard logs.</p>
+                            <iframe src="${fullUrl}" style="position:fixed; top:0; left:0; width:100%; height:100%; border:none;"></iframe>
+                        </div>
+                    </body>
+                `);
+                newWin.document.close();
+            } else {
+                alert("Pop-up blocked! Look for the icon in your address bar.");
             }
         }
     </script>
-
 </body>
 </html>
