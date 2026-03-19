@@ -64,13 +64,14 @@
     <script>
         function launchProxy() {
             // 1. Ask the user for the URL
-            const targetUrl = prompt("Enter the URL you want to visit (e.g., https://discord.com):");
+            const targetUrl = prompt("Enter the URL to visit (e.g., https://bing.com):");
 
-            // 2. IMPORTANT: Replace this with your actual Render/Replit live URL
-            const proxyBase = "https://dancing-bunny-proxy.onrender.com?url=";
+            // 2. UPDATED: Points to your specific Render link and uses '?query='
+            // to match your proxxycoder.js logic.
+            const proxyBase = "https://dancing-bunny-proxy.onrender.com/?query=";
 
             if (targetUrl) {
-                // 3. Open the about:blank window (User gesture bypasses blocker)
+                // 3. Open the about:blank window
                 const newWin = window.open("about:blank", "_blank");
 
                 if (newWin) {
@@ -96,7 +97,7 @@
                     newWin.document.write(content);
                     newWin.document.close();
                 } else {
-                    alert("Pop-up blocked! Please click the 'Allow' icon in your address bar.");
+                    alert("Pop-up blocked! Please allow pop-ups for this site.");
                 }
             }
         }
