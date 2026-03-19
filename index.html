@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dancing Bunny Proxy Launcher</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #00ff88;
+        }
+
+        .proxy-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: #00ff88;
+            color: #121212;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .proxy-btn:hover {
+            background-color: #00cc6e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .proxy-btn:active {
+            transform: translateY(0);
+        }
+
+        p {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Dancing Bunny Proxy</h1>
+    
+    <button class="proxy-btn" onclick="launchProxy()">Open Stealth Tab</button>
+    
+    <p>Opens a new about:blank page with the proxy loaded.</p>
+
+    <script>
+        function launchProxy() {
+            // 1. Ask the user for the URL
+            const targetUrl = prompt("Enter the URL you want to visit (e.g., https://discord.com):");
+
+            // 2. IMPORTANT: Replace this with your actual Render/Replit live URL
+            const proxyBase = "https://your-render-app-name.onrender.com/proxy?url=";
+
+            if (targetUrl) {
+                // 3. Open the about:blank window (User gesture bypasses blocker)
+                const newWin = window.open("about:blank", "_blank");
+
+                if (newWin) {
+                    // 4. Create the content for the new tab
+                    const content = `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Classes</title>
+                            <style>
+                                body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+                                iframe { width: 100%; height: 100%; border: none; }
+                            </style>
+                        </head>
+                        <body>
+                            <iframe src="${proxyBase}${encodeURIComponent(targetUrl)}" allowfullscreen></iframe>
+                        </body>
+                        </html>
+                    `;
+
+                    // 5. Write the content to the new window
+                    newWin.document.open();
+                    newWin.document.write(content);
+                    newWin.document.close();
+                } else {
+                    alert("Pop-up blocked! Please click the 'Allow' icon in your address bar.");
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
