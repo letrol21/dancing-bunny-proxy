@@ -1,1 +1,19 @@
-
+<html>
+  <body>
+    <button
+      onclick='fetch("https://raw.githubusercontent.com/letrol21/dancing-bunny/refs/heads/main/v2.html")
+        .then(response => response.text())
+        .then(text => {
+          const newWin = window.open("about:blank", "_blank");
+          if (newWin) {
+            newWin.document.open();
+            newWin.document.write(text);
+            newWin.document.close();
+          }
+        });'
+      style="width: 100%; height: 100%; font-size: 14; font-family: Comic Sans MS;">
+      bookmark this page <br><br>
+      click to open
+    </script>
+  </body>
+</html>
