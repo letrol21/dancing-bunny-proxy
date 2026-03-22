@@ -1,50 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Dancing Bunny Proxy</title>
+    <title>Simple Tabbed Browser</title>
+
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; color: #0f8; margin: 0; }
-        .btn { padding: 15px 35px; font-size: 1.2rem; background: #0f8; color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #status { margin-top: 20px; color: #888; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #202124;
+            color: white;
+        }
+
+        /* Tabs */
+        #tabs {
+            display: flex;
+            background: #303134;
+            padding: 5px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 8px 12px;
+            background: #3c4043;
+            margin-right: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: #5f6368;
+        }
+
+        #toolbar {
+            display: flex;
+            gap: 5px;
+            padding: 8px;
+            background: #303134;
+        }
+
+        button {
+            background: #5f6368;
+            border: none;
+            color: white;
+            padding: 6px;
+            cursor: pointer;
+        }
+
+        input {
+            flex: 1;
+            padding: 6px;
+            background: #202124;
+            color: white;
+            border: none;
+        }
+
+        iframe {
+            width: 100%;
+            height: calc(100vh - 90px);
+            border: none;
+            background: white;
+        }
     </style>
 </head>
+
 <body>
 
-    <h1>Dancing Bunny Proxy</h1>
-    <button class="btn" onclick="start()">Launch Stealth Tab</button>
-    <p id="status">Status: Checking Server...</p>
+    <div id="tabs"></div>
+
+    <div id="toolbar">
+        <button onclick="newTab()">＋</button>
+        <button onclick="back()">⬅</button>
+        <button onclick="forward()">➡</button>
+        <button onclick="reload()">⟳</button>
+        <input id="urlBar" placeholder="Search or enter URL">
+        <button onclick="navigate()">Go</button>
+    </div>
+
+    <div id="view"></div>
 
     <script>
-        const renderUrl = "https://dancing-bunny-proxy.onrender.com/";
+        let tabs = [];
+        let currentTab = 0;
 
-        // Self-check to see if Render is awake
-        async function checkServer() {
-            try {
-                const res = await fetch(renderUrl);
-                if (res.ok) document.getElementById('status').innerText = "Status: Server Online";
-            } catch (e) {
-                document.getElementById('status').innerText = "Status: Server Waking Up... (Wait 30s)";
+        function createTab() {
+            const iframe = document.createElement("iframe");
+            iframe.src = "https://example.com";
+
+            return {
+                title: "New Tab",
+                iframe: iframe,
+                history: [],
+                index: -1
+            };
+        }
+
+        function newTab() {
+            tabs.push(createTab());
+            currentTab = tabs.length - 1;
+            render();
+        }
+
+        function switchTab(i) {
+            currentTab = i;
+            render();
+        }
+
+        function renderTabs() {
+            const tabsDiv = document.getElementById("tabs");
+            tabsDiv.innerHTML = "";
+
+            tabs.forEach((t, i) => {
+                const el = document.createElement("div");
+                el.className = "tab" + (i === currentTab ? " active" : "");
+                el.innerText = t.title;
+                el.onclick = () => switchTab(i);
+                tabsDiv.appendChild(el);
+            });
+        }
+
+        function renderView() {
+            const view = document.getElementById("view");
+            view.innerHTML = "";
+            view.appendChild(tabs[currentTab].iframe);
+        }
+
+        function render() {
+            renderTabs();
+            renderView();
+        }
+
+        function formatInput(input) {
+            if (input.startsWith("http")) return input;
+            if (input.includes(".")) return "https://" + input;
+            return "https://www.google.com/search?q=" + encodeURIComponent(input);
+        }
+
+        function navigate() {
+            const input = document.getElementById("urlBar").value;
+            const url = formatInput(input);
+
+            const tab = tabs[currentTab];
+            const iframe = tab.iframe;
+
+            iframe.src = url;
+
+            tab.title = input.slice(0, 15);
+            tab.history.push(url);
+            tab.index = tab.history.length - 1;
+
+            renderTabs();
+        }
+
+        function back() {
+            const tab = tabs[currentTab];
+            if (tab.index > 0) {
+                tab.index--;
+                tab.iframe.src = tab.history[tab.index];
             }
         }
-        setInterval(checkServer, 5000);
-        checkServer();
 
-        function start() {
-            const url = prompt("Enter Site URL:", "https://www.bing.com");
-            if (!url) return;
-
-            const win = window.open("about:blank", "_blank");
-            if (win) {
-                const proxyUrl = `${renderUrl}?query=${encodeURIComponent(url)}`;
-                win.document.write(`
-                    <title>Loading...</title>
-                    <body style="margin:0;overflow:hidden;background:#000;">
-                        <iframe src="${proxyUrl}" style="width:100vw;height:100vh;border:none;"></iframe>
-                    </body>
-                `);
+        function forward() {
+            const tab = tabs[currentTab];
+            if (tab.index < tab.history.length - 1) {
+                tab.index++;
+                tab.iframe.src = tab.history[tab.index];
             }
         }
+
+        function reload() {
+            const iframe = tabs[currentTab].iframe;
+            iframe.src = iframe.src;
+        }
+
+        newTab();
     </script>
+
 </body>
+
 </html>
