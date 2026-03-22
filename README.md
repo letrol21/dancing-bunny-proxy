@@ -1,4 +1,4 @@
-#simple proxy browser
+# simple proxy browser
 
 ## doesn't work for most sites
 
