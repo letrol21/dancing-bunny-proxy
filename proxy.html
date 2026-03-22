@@ -13,7 +13,6 @@
             color: white;
         }
 
-        /* Tabs */
         #tabs {
             display: flex;
             background: #303134;
@@ -22,15 +21,30 @@
         }
 
         .tab {
-            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
             background: #3c4043;
             margin-right: 5px;
             border-radius: 8px;
             cursor: pointer;
+            white-space: nowrap;
         }
 
         .tab.active {
             background: #5f6368;
+        }
+
+        .tab img {
+            width: 16px;
+            height: 16px;
+        }
+
+        .tab .close {
+            margin-left: 6px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
         #toolbar {
@@ -86,14 +100,56 @@
 
         function createTab() {
             const iframe = document.createElement("iframe");
-            iframe.src = "https://example.com";
 
-            return {
+            const tab = {
                 title: "New Tab",
+                icon: "",
+                url: "",
                 iframe: iframe,
                 history: [],
                 index: -1
             };
+
+            iframe.onload = () => {
+                const tab = tabs[currentTab];
+
+                try {
+                    const doc = iframe.contentDocument;
+
+                    // Same-origin
+                    if (doc.title) {
+                        tab.title = doc.title;
+                    }
+
+                    tab.url = iframe.src;
+
+                    const icon =
+                        doc.querySelector("link[rel~='icon']")?.href ||
+                        iframe.src + "/favicon.ico";
+
+                    tab.icon = icon;
+
+                } catch (e) {
+                    try {
+                        const url = new URL(iframe.src);
+                        const domain = url.hostname.replace(/^www\./, "");
+
+                        tab.title = domain;
+                        tab.url = iframe.src;
+
+                        tab.icon = "https://www.google.com/s2/favicons?domain=" + url.hostname;
+
+                    } catch {
+                        tab.title = "New Tab";
+                    }
+                }
+
+                document.getElementById("urlBar").value = tab.url || "";
+
+                renderTabs();
+            };
+
+            return tab;
         }
 
         function newTab() {
@@ -102,10 +158,30 @@
             render();
         }
 
-        function switchTab(i) {
-            currentTab = i;
+        function closeTab(i) {
+            tabs.splice(i, 1);
+
+            if (currentTab >= tabs.length) {
+                currentTab = tabs.length - 1;
+            }
+
+            if (tabs.length === 0) {
+                newTab();
+            }
+
             render();
         }
+
+        function switchTab(i) {
+            currentTab = i;
+
+            const tab = tabs[currentTab];
+
+            document.getElementById("urlBar").value = tab.url || "";
+
+            render();
+        }
+
 
         function renderTabs() {
             const tabsDiv = document.getElementById("tabs");
@@ -114,8 +190,27 @@
             tabs.forEach((t, i) => {
                 const el = document.createElement("div");
                 el.className = "tab" + (i === currentTab ? " active" : "");
-                el.innerText = t.title;
+
+                const icon = document.createElement("img");
+                icon.src = t.icon || "https://www.google.com/s2/favicons?domain=example.com";
+
+                const title = document.createElement("span");
+                title.innerText = t.title || "Tab";
+
+                const close = document.createElement("span");
+                close.className = "close";
+                close.innerText = "×";
+                close.onclick = (e) => {
+                    e.stopPropagation();
+                    closeTab(i);
+                };
+
                 el.onclick = () => switchTab(i);
+
+                el.appendChild(icon);
+                el.appendChild(title);
+                el.appendChild(close);
+
                 tabsDiv.appendChild(el);
             });
         }
@@ -131,6 +226,7 @@
             renderView();
         }
 
+
         function formatInput(input) {
             if (input.startsWith("http")) return input;
             if (input.includes(".")) return "https://" + input;
@@ -142,13 +238,20 @@
             const url = formatInput(input);
 
             const tab = tabs[currentTab];
-            const iframe = tab.iframe;
 
-            iframe.src = url;
+            tab.iframe.src = url;
+            tab.url = url;
 
-            tab.title = input.slice(0, 15);
             tab.history.push(url);
             tab.index = tab.history.length - 1;
+
+            try {
+                const domain = new URL(url).hostname.replace(/^www\./, "");
+                tab.title = domain;
+                tab.icon = "https://www.google.com/s2/favicons?domain=" + domain;
+            } catch {
+                tab.title = "New Tab";
+            }
 
             renderTabs();
         }
@@ -173,6 +276,7 @@
             const iframe = tabs[currentTab].iframe;
             iframe.src = iframe.src;
         }
+
 
         newTab();
     </script>
